@@ -26,9 +26,9 @@ jobs:
       - name: Publish Compose app
         run: |
           docker compose version
-          docker compose publish ghcr.io/${{ github.repository }}:latest \
+          yes y |docker compose publish ghcr.io/${{ github.repository }}:latest \
             --resolve-image-digests \
             --with-env
       - name: List OCI artifact
         run: |
-          docker manifest inspect oci://ghcr.io/${{ github.repository }}:latest
+          docker manifest inspect ghcr.io/{{ github.repository }}:latest
