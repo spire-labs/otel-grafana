@@ -1,0 +1,7 @@
+.idea/**
+
+# Ignore sensitive system files
+.DS_Store
+
+*.iml
+.env
