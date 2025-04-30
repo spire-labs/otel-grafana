@@ -1,45 +1,63 @@
+version: "3.9"
+
+configs:
+  otel_collector_config:
+    file: ./etc/otel-collector/otel-collector-config.yml
+  tempo_config:
+    file: ./etc/tempo/tempo-config.yml
+  loki_config:
+    file: ./etc/loki/loki-config.yml
+  prometheus_config:
+    file: ./etc/prometheus/prometheus.yml
+  grafana_ini:
+    file: ./etc/grafana/grafana.ini
+
 services:
   otel-collector:
     image: otel/opentelemetry-collector-contrib:latest
-    volumes:
-      - ./etc/otel-collector/otel-collector-config.yml:/etc/otel-collector-config.yml
-    command: [ "--config=/etc/otel-collector-config.yml" ]
+    configs:
+      - source: otel_collector_config
+        target: /etc/otel-collector-config.yml
+    command: ["--config=/etc/otel-collector-config.yml"]
 
   tempo:
     image: grafana/tempo:latest
-    command: [ "-config.file=/etc/tempo-config.yml"]
-    volumes:
-      - ./etc/tempo/tempo-config.yml:/etc/tempo-config.yml
+    configs:
+      - source: tempo_config
+        target: /etc/tempo-config.yml
+    command: ["-config.file=/etc/tempo-config.yml"]
     ports:
       - "3200:3200"
 
   loki:
     image: grafana/loki:latest
+    configs:
+      - source: loki_config
+        target: /etc/loki/local-config.yml
+    command: ["-config.file=/etc/loki/local-config.yml"]
     ports:
       - "3100:3100"
-    command: [ "-config.file=/etc/loki/local-config.yml" ]
-    volumes:
-      - ./etc/loki/loki-config.yml:/etc/loki/local-config.yml
 
   prometheus:
     image: prom/prometheus:latest
+    configs:
+      - source: prometheus_config
+        target: /etc/prometheus/prometheus.yml
+    command: ["--config.file=/etc/prometheus/prometheus.yml"]
     ports:
       - "9090:9090"
-    volumes:
-      - ./etc/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
-    command:
-      - "--config.file=/etc/prometheus/prometheus.yml"
 
   grafana:
     image: grafana/grafana:latest
-    environment:
-      - GF_SECURITY_ADMIN_PASSWORD=admin
+    configs:
+      - source: grafana_ini
+        target: /etc/grafana/grafana.ini
     ports:
       - "3000:3000"
-    volumes:
-      - ./etc/grafana/grafana.ini:/etc/grafana/grafana.ini
-      - ./etc/grafana/provisioning:/etc/grafana/provisioning
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
     depends_on:
       - tempo
       - prometheus
       - loki
+
