@@ -1,5 +1,9 @@
 name: Publish Compose OCI Artifact
 
+permissions:
+  contents: read
+  packages: write
+
 on:
   push:
     branches:
@@ -29,6 +33,3 @@ jobs:
           yes y |docker compose publish ghcr.io/${{ github.repository }}:latest \
             --resolve-image-digests \
             --with-env
-      - name: List OCI artifact
-        run: |
-          docker manifest inspect ghcr.io/{{ github.repository }}:latest
