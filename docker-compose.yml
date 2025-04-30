@@ -1,5 +1,3 @@
-version: "3.9"
-
 configs:
   otel_collector_config:
     file: ./etc/otel-collector/otel-collector-config.yml
