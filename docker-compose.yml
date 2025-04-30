@@ -1,61 +1,124 @@
-configs:
-  otel_collector_config:
-    file: ./etc/otel-collector/otel-collector-config.yml
-  tempo_config:
-    file: ./etc/tempo/tempo-config.yml
-  loki_config:
-    file: ./etc/loki/loki-config.yml
-  prometheus_config:
-    file: ./etc/prometheus/prometheus.yml
-  grafana_ini:
-    file: ./etc/grafana/grafana.ini
-
 services:
   otel-collector:
     image: otel/opentelemetry-collector-contrib:latest
-    configs:
-      - source: otel_collector_config
-        target: /etc/otel-collector-config.yml
-    command: ["--config=/etc/otel-collector-config.yml"]
+    entrypoint: ["sh", "-c"]
+    command: |
+      cat <<'EOF' >/etc/otel-collector-config.yml
+      # ── your OTEL Collector config starts here ──
+      receivers:
+        otlp:
+          protocols:
+            grpc:
+            http
+      processors:
+        batch:
+      exporters:
+        logging:
+          logLevel: debug
+      service:
+        pipelines:
+          traces:
+            receivers: [otlp]
+            processors: [batch]
+            exporters: [logging]
+      # ── end OTEL config ──
+      EOF
+      exec /otelcontribcol --config=/etc/otel-collector-config.yml
 
   tempo:
     image: grafana/tempo:latest
-    configs:
-      - source: tempo_config
-        target: /etc/tempo-config.yml
-    command: ["-config.file=/etc/tempo-config.yml"]
+    entrypoint: ["sh", "-c"]
+    command: |
+      cat <<'EOF' >/etc/tempo-config.yml
+      # ── your Tempo config ──
+      server:
+        http_listen_port: 3200
+      # …
+      # ── end Tempo config ──
+      EOF
+      exec grafana-tempo --config.file=/etc/tempo-config.yml
     ports:
       - "3200:3200"
 
   loki:
     image: grafana/loki:latest
-    configs:
-      - source: loki_config
-        target: /etc/loki/local-config.yml
-    command: ["-config.file=/etc/loki/local-config.yml"]
+    entrypoint: ["sh", "-c"]
+    command: |
+      cat <<'EOF' >/etc/loki/local-config.yml
+      # ── your Loki config ──
+      auth_enabled: false
+      server:
+        http_listen_port: 3100
+      # …
+      # ── end Loki config ──
+      EOF
+      exec loki -config.file=/etc/loki/local-config.yml
     ports:
       - "3100:3100"
 
   prometheus:
     image: prom/prometheus:latest
-    configs:
-      - source: prometheus_config
-        target: /etc/prometheus/prometheus.yml
-    command: ["--config.file=/etc/prometheus/prometheus.yml"]
+    entrypoint: ["sh", "-c"]
+    command: |
+      cat <<'EOF' >/etc/prometheus/prometheus.yml
+      # ── your Prometheus config ──
+      global:
+        scrape_interval: 15s
+      scrape_configs:
+        - job_name: 'prometheus'
+          static_configs:
+            - targets: ['localhost:9090']
+      # ── end Prometheus config ──
+      EOF
+      exec prometheus --config.file=/etc/prometheus/prometheus.yml
     ports:
       - "9090:9090"
 
   grafana:
     image: grafana/grafana:latest
-    configs:
-      - source: grafana_ini
-        target: /etc/grafana/grafana.ini
+    entrypoint: ["sh", "-c"]
+    command: |
+      cat <<'EOF' >/etc/grafana/grafana.ini
+      # ── your Grafana config ──
+      [server]
+      http_addr = 
+      http_port = 3000
+      [security]
+      admin_password = admin
+      # ── end Grafana config ──
+      EOF
+      cat <<'EOF' > /etc/grafana/provisioning/datasources/default.yml
+      apiVersion: 1
+      datasources:
+        - name: Tempo
+          type: tempo
+          access: proxy
+          url: http://tempo:3200
+          isDefault: false
+          jsonData:
+            httpMethod: GET
+            serviceMap:
+              enabled: true
+      
+        - name: Loki
+          type: loki
+          access: proxy
+          url: http://loki:3100
+          isDefault: true
+          jsonData:
+            maxLines: 1000
+      
+        - name: Prometheus
+          type: prometheus
+          url: http://prometheus:9090
+          isDefault: false
+          access: proxy
+          editable: true
+      EOF
+      exec grafana-server --config=/etc/grafana/grafana.ini
     ports:
       - "3000:3000"
-    environment:
-      GF_SECURITY_ADMIN_PASSWORD: admin
     depends_on:
       - tempo
       - prometheus
       - loki
-
