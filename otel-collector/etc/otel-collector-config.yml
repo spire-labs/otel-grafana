@@ -13,9 +13,8 @@ exporters:
     endpoint: "http://loki:3100/otlp"
   otlphttp/tempo:
     endpoint: "http://tempo:4318/v1/traces"
-  prometheusremotewrite:
-    endpoint: "http://prometheus:9090/api/v1/write"
-    send_metadata: true
+  prometheus:
+    endpoint: "http://prometheus:9090"
     resource_to_telemetry_conversion:
       enabled: true
 
@@ -32,6 +31,6 @@ service:
       exporters: [otlphttp/loki]
     metrics:
       receivers: [otlp]
-      exporters: [prometheusremotewrite]
+      exporters: [prometheus]
 
 
