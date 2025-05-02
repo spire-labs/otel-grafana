@@ -14,7 +14,7 @@ exporters:
   otlphttp/tempo:
     endpoint: "http://tempo:4318/v1/traces"
   prometheusremotewrite:
-    endpoint: "http://localhost:9090/api/v1/write"
+    endpoint: "http://prometheus:9090/api/v1/write"
     send_metadata: true
     resource_to_telemetry_conversion:
       enabled: true
