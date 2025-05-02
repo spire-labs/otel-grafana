@@ -1,28 +1,33 @@
 services:
   otel-collector:
     build: otel-collector
+    image: ghcr.io/spire-labs/otel-collector:latest
     command: ["--config=/etc/otel-collector-config.yml"]
 
   tempo:
     build: tempo
+    image: ghcr.io/spire-labs/tempo:latest
     command: ["-config.file=/etc/tempo-config.yml"]
     ports:
       - "3200:3200"
 
   loki:
     build: loki
+    image: ghcr.io/spire-labs/loki:latest
     command: ["-config.file=/etc/loki/loki-config.yml"]
     ports:
       - "3100:3100"
 
   prometheus:
     build: prometheus
+    image: ghcr.io/spire-labs/prometheus:latest
     command: ["--config.file=/etc/prometheus/prometheus.yml"]
     ports:
       - "9090:9090"
 
   grafana:
     build: grafana
+    image: ghcr.io/spire-labs/grafana:latest
     ports:
       - "3000:3000"
     depends_on:
