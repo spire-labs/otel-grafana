@@ -3,6 +3,8 @@ services:
     container_name: otel-collector
     image: ghcr.io/spire-labs/otel-collector:latest
     command: ["--config=/etc/otel-collector-config.yml"]
+    ports:
+      - "4317:4317"
 
   tempo:
     container_name: tempo
