@@ -25,3 +25,32 @@ storage:
     wal:
       path: /tmp/tempo/wal
 
+metrics_generator:
+  # actually turn the generator on
+  enabled: true
+
+  # which time-series processors to run
+  processor:
+    # required for TraceQL metrics like rate(), count_over_time(), etc.
+    local_blocks: {}
+
+  # where the generator stores its own WAL of partial blocks
+  storage:
+    path: /tmp/tempo/generator/wal
+    wal:
+
+  # (optional) ship these blocks off to Prometheus via remote_write
+  registry:
+    collection_interval: 15s
+    external_labels: {}
+    remote_write: []
+
+# if you have tenant-overrides enabled, make sure local_blocks is in your
+# overrides.defaults.metrics_generator.processors list, e.g.:
+overrides:
+  defaults:
+    metrics_generator:
+      processors: 
+      - service-graphs
+      - span-metrics
+      - local-blocks
