@@ -12,7 +12,7 @@ exporters:
   otlphttp/loki:
     endpoint: "http://loki:3100/otlp"
   otlphttp/tempo:
-    endpoint: "http://tempo:4318/v1/traces"
+    endpoint: "http://tempo:4318"
   prometheusremotewrite:
     endpoint: "http://prometheus:9090/api/v1/write"
     send_metadata: true
