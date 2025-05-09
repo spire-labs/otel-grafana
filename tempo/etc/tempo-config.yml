@@ -40,7 +40,7 @@ metrics_generator:
 
   # choose which processors to run
   processor:
-    local-blocks: {}      # REQUIRED for TraceQL (rate(), count_over_time(), etc.)
+    local_blocks: {}      # REQUIRED for TraceQL (rate(), count_over_time(), etc.)
     span_metrics: {}      # optional: RED metrics
     service_graphs: {}    # optional: service-graph metrics
 
