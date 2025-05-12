@@ -7,14 +7,10 @@ receivers:
         endpoint: "0.0.0.0:4317"
 
 exporters:
-  debug:
-    verbosity: detailed
   otlphttp/loki:
     endpoint: "http://loki:3100/otlp"
-  otlp/tempo:
-    endpoint: "tempo:4317"
-    tls:
-      insecure: true
+  otlphttp/tempo:
+    endpoint: "http://tempo:4318/"
   prometheusremotewrite:
     endpoint: "http://prometheus:9090/api/v1/write"
     send_metadata: true
@@ -25,15 +21,15 @@ service:
   telemetry:
     logs:
       level: info
+
   pipelines:
     traces:
       receivers: [otlp]
-      exporters: [otlp/tempo]
+      exporters: [otlphttp/tempo]
     logs:
       receivers: [otlp]
       exporters: [otlphttp/loki]
     metrics:
       receivers: [otlp]
       exporters: [prometheusremotewrite]
-
 

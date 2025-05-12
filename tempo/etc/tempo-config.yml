@@ -9,6 +9,14 @@ distributor:
         http:
           endpoint: 0.0.0.0:4318
 
+storage:
+  trace:
+    backend: local
+    local:
+      path: /tmp/tempo/traces      # ← new traces folder
+    wal:
+      path: /tmp/tempo/wal         # ← WAL stays here
+
 ingester:
   trace_idle_period: 10s
   max_block_duration: 5m
@@ -17,40 +25,22 @@ compactor:
   compaction:
     block_retention: 1h
 
-storage:
-  trace:
-    backend: local
-    local:
-      path: /tmp/tempo
-    wal:
-      path: /tmp/tempo/wal
-
-# ──────────────────────────────────────────────────────────────────────────────
-# Metrics-generator configuration (static YAML)
-# ──────────────────────────────────────────────────────────────────────────────
 metrics_generator:
   ring:
     kvstore:
       store: memberlist
       prefix: collectors/
-
     heartbeat_period: 5s
     heartbeat_timeout: 1m
-
-
-  # choose which processors to run
   processor:
-    local_blocks: {}      # REQUIRED for TraceQL (rate(), count_over_time(), etc.)
-    span_metrics: {}      # optional: RED metrics
-    service_graphs: {}    # optional: service-graph metrics
-
-  # where the generator writes its own WAL and (optionally) remote-writes
+    local_blocks: {}
+    span_metrics: {}
+    service_graphs: {}
   storage:
     path: /tmp/tempo/generator/wal
     remote_write:
       - url: http://prometheus:9090/api/v1/write
   registry:
-    # only these fields are allowed here (no remote_write)
     collection_interval: 15s
     external_labels:
       source: tempo
