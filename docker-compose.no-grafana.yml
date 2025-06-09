@@ -1,0 +1,28 @@
+services:
+  otel-collector:
+    container_name: otel-collector
+    image: ghcr.io/spire-labs/otel-collector:latest
+    command: ["--config=/etc/otel-collector-config.yml"]
+    ports:
+      - "4317:4317"
+
+  tempo:
+    container_name: tempo
+    image: ghcr.io/spire-labs/tempo:latest
+    command: ["-config.file=/etc/tempo-config.yml"]
+    ports:
+      - "3200:3200"
+
+  loki:
+    container_name: loki
+    image: ghcr.io/spire-labs/loki:latest
+    command: ["-config.file=/etc/loki/loki-config.yml"]
+    ports:
+      - "3100:3100"
+
+  prometheus:
+    container_name: prometheus
+    image: ghcr.io/spire-labs/prometheus:latest
+    command: ["--config.file=/etc/prometheus/prometheus.yml", "--web.enable-remote-write-receiver"]
+    ports:
+      - "9090:9090" 
