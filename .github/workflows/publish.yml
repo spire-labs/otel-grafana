@@ -55,9 +55,15 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Publish Compose app
+      - name: Publish Compose app (with Grafana)
         run: |
           docker compose build
           yes y |docker compose publish ghcr.io/${{ github.repository }}:latest \
+            --resolve-image-digests \
+            --with-env
+      - name: Publish Compose app (no Grafana)
+        run: |
+          docker compose -f docker-compose.no-grafana.yml build
+          yes y |docker compose -f docker-compose.no-grafana.yml publish ghcr.io/${{ github.repository }}:no-grafana \
             --resolve-image-digests \
             --with-env
