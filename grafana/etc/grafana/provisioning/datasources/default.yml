@@ -9,6 +9,13 @@ datasources:
       httpMethod: GET
       serviceMap:
         enabled: true
+      tracesToLogsV2:
+        datasourceUid: Loki
+        spanStartTimeShift: '-1h'
+        spanEndTimeShift: '1h'
+        tags: [{ key: 'service.name', value: 'service_name' }]
+        filterByTraceID: true
+        filterBySpanID: true
 
   - name: Loki
     type: loki
@@ -17,6 +24,12 @@ datasources:
     isDefault: true
     jsonData:
       maxLines: 1000
+      derivedFields:
+        - name: TraceID
+          matcherRegex: 'trace_id'
+          url: '$${__value.raw}'
+          matcherType: label
+          datasourceUid: Tempo
 
   - name: Prometheus
     type: prometheus
